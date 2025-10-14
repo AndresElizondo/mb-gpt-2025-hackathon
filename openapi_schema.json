@@ -1,14 +1,14 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "Metabase GPT Proxy",
-    "description": "Secure proxy for ChatGPT to query Metabase data",
+    "title": "0x API Analytics Proxy",
+    "description": "Secure proxy for ChatGPT to query 0x API metrics from Metabase",
     "version": "1.0.0"
   },
   "servers": [
     {
-      "url": "https://YOUR-SERVICE-NAME.onrender.com",
-      "description": "Production - REPLACE WITH YOUR ACTUAL RENDER URL"
+      "url": "https://mb-gpt-2025-hackathon.onrender.com",
+      "description": "Production"
     }
   ],
   "paths": {
@@ -25,27 +25,11 @@
                 "$ref": "#/components/schemas/AnswerReq"
               },
               "examples": {
-                "weekly_revenue": {
-                  "summary": "Weekly Revenue Query",
+                "llm_totals": {
+                  "summary": "0x API Monthly Totals",
                   "value": {
-                    "question": "weekly_revenue",
-                    "params": {
-                      "start_date": "2025-01-01",
-                      "end_date": "2025-01-31",
-                      "product": "SKU-123",
-                      "market": "US"
-                    }
-                  }
-                },
-                "cohort_retention": {
-                  "summary": "Cohort Retention Query",
-                  "value": {
-                    "question": "cohort_retention",
-                    "params": {
-                      "start_date": "2025-01-01",
-                      "end_date": "2025-03-31",
-                      "cohort": "2025-01"
-                    }
+                    "question": "llm_totals",
+                    "params": {}
                   }
                 }
               }
@@ -89,42 +73,14 @@
         "properties": {
           "question": {
             "type": "string",
-            "enum": ["weekly_revenue", "cohort_retention"],
+            "enum": ["llm_totals"],
             "description": "The name of the allowlisted Metabase query to execute"
           },
           "params": {
             "type": "object",
-            "description": "Query parameters - varies by question type",
-            "properties": {
-              "start_date": {
-                "type": "string",
-                "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
-                "description": "Start date in YYYY-MM-DD format",
-                "example": "2025-01-01"
-              },
-              "end_date": {
-                "type": "string",
-                "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
-                "description": "End date in YYYY-MM-DD format",
-                "example": "2025-01-31"
-              },
-              "product": {
-                "type": "string",
-                "description": "Product SKU or code (for weekly_revenue)",
-                "example": "SKU-123"
-              },
-              "market": {
-                "type": "string",
-                "description": "Market region (for weekly_revenue)",
-                "example": "US",
-                "enum": ["US", "EU", "APAC"]
-              },
-              "cohort": {
-                "type": "string",
-                "description": "Cohort identifier in YYYY-MM format (for cohort_retention)",
-                "example": "2025-01"
-              }
-            }
+            "description": "Query parameters (not required for llm_totals)",
+            "properties": {},
+            "default": {}
           }
         }
       },
@@ -134,8 +90,8 @@
         "properties": {
           "summary": {
             "type": "string",
-            "description": "Human-readable summary of the query results with basic statistics",
-            "example": "weekly_revenue: 4 rows. min=1234.56, max=5678.90, avg=3456.78"
+            "description": "Human-readable summary of the query results",
+            "example": "Returned 12 months of data with 33 metrics including volume, fees, margin, transaction counts across API, Swap, RFQ, Gasless, and Matcha products."
           },
           "columns": {
             "type": "array",
@@ -143,7 +99,7 @@
               "type": "string"
             },
             "description": "Array of column names from the query results",
-            "example": ["week", "revenue", "product", "market"]
+            "example": ["timestamp", "volume", "fees", "margin", "api_txs", "swap_volume", "swap_fees", "rfq_volume", "rfq_fees", "gasless_volume", "matcha_volume"]
           },
           "rows": {
             "type": "array",
@@ -153,8 +109,7 @@
             },
             "description": "Array of data rows, each row is an array of values corresponding to columns",
             "example": [
-              ["2025-W01", 1234.56, "SKU-123", "US"],
-              ["2025-W02", 2345.67, "SKU-123", "US"]
+              ["2025-09-01", 4768076878.66, 1145587.23, 2.40, 18019020, 370213255.87, 295505.80, 345748030.35, 244450.08, 275850244.76, 991447970.90]
             ]
           },
           "truncated": {
