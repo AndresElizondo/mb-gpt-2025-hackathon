@@ -47,7 +47,7 @@ ALLOWLIST: Dict[str, Dict[str, Any]] = {
 # --- Models ---
 class AnswerReq(BaseModel):
     question: str
-    params: Dict[str, Any] = {}
+    params: Optional[Dict[str, Any]] = None
 
     @validator("question")
     def is_allowlisted(cls, v):
@@ -159,7 +159,9 @@ async def answer(req: AnswerReq, authorization: str = Header(default="")):
     if Schema is None:
         params_dict = {}
     else:
-        params_obj = Schema(**req.params)  # pydantic validation
+        # Handle None params gracefully
+        params_input = req.params if req.params is not None else {}
+        params_obj = Schema(**params_input)  # pydantic validation
         params_dict = params_obj.dict()
 
         # extra guardrails

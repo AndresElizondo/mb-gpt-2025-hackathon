@@ -74,13 +74,7 @@
           "question": {
             "type": "string",
             "enum": ["llm_totals"],
-            "description": "The name of the allowlisted Metabase query to execute"
-          },
-          "params": {
-            "type": "object",
-            "description": "Query parameters (not required for llm_totals)",
-            "properties": {},
-            "default": {}
+            "description": "The name of the allowlisted Metabase query to execute. Use 'llm_totals' to retrieve all 0x API metrics (no parameters required)."
           }
         }
       },
