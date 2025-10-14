@@ -19,24 +19,24 @@ class DateRange(BaseModel):
     start_date: Optional[str] = Field(None, pattern=r"^\d{4}-\d{2}-\d{2}$")
     end_date:   Optional[str] = Field(None, pattern=r"^\d{4}-\d{2}-\d{2}$")
 
-class WeeklyRevenueParams(DateRange):
-    product: Optional[str] = Field(None, description="SKU or product code")
-    market:  Optional[str] = Field(None, description="e.g., US, EU, APAC")
+# class WeeklyRevenueParams(DateRange):
+#     product: Optional[str] = Field(None, description="SKU or product code")
+#     market:  Optional[str] = Field(None, description="e.g., US, EU, APAC")
 
-class CohortRetentionParams(DateRange):
-    cohort: Optional[str] = Field(None, description="signup_month like 2025-07")
+# class CohortRetentionParams(DateRange):
+#     cohort: Optional[str] = Field(None, description="signup_month like 2025-07")
 
 ALLOWLIST: Dict[str, Dict[str, Any]] = {
-    "weekly_revenue": {
-        "card_id": 123,                 # your Metabase Saved Question ID
-        "schema": WeeklyRevenueParams,
-        "max_days": 370,                # guardrail
-    },
-    "cohort_retention": {
-        "card_id": 456,
-        "schema": CohortRetentionParams,
-        "max_days": 370,
-    },
+    # "weekly_revenue": {
+    #     "card_id": 123,                 # your Metabase Saved Question ID
+    #     "schema": WeeklyRevenueParams,
+    #     "max_days": 370,                # guardrail
+    # },
+    # "cohort_retention": {
+    #     "card_id": 456,
+    #     "schema": CohortRetentionParams,
+    #     "max_days": 370,
+    # },
     "llm_totals": {
         "card_id": 1381,
         "schema": None,  # No parameters needed
