@@ -1,0 +1,191 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Metabase GPT Proxy",
+    "description": "Secure proxy for ChatGPT to query Metabase data",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://YOUR-SERVICE-NAME.onrender.com",
+      "description": "Production - REPLACE WITH YOUR ACTUAL RENDER URL"
+    }
+  ],
+  "paths": {
+    "/answer": {
+      "post": {
+        "summary": "Query Metabase Data",
+        "description": "Execute an allowlisted Metabase query with optional parameters",
+        "operationId": "queryMetabase",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnswerReq"
+              },
+              "examples": {
+                "weekly_revenue": {
+                  "summary": "Weekly Revenue Query",
+                  "value": {
+                    "question": "weekly_revenue",
+                    "params": {
+                      "start_date": "2025-01-01",
+                      "end_date": "2025-01-31",
+                      "product": "SKU-123",
+                      "market": "US"
+                    }
+                  }
+                },
+                "cohort_retention": {
+                  "summary": "Cohort Retention Query",
+                  "value": {
+                    "question": "cohort_retention",
+                    "params": {
+                      "start_date": "2025-01-01",
+                      "end_date": "2025-03-31",
+                      "cohort": "2025-01"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response with query results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnswerResp"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - invalid bearer token"
+          },
+          "400": {
+            "description": "Bad request - invalid parameters or question name"
+          },
+          "500": {
+            "description": "Server error - Metabase connection or query error"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AnswerReq": {
+        "type": "object",
+        "required": ["question"],
+        "properties": {
+          "question": {
+            "type": "string",
+            "enum": ["weekly_revenue", "cohort_retention"],
+            "description": "The name of the allowlisted Metabase query to execute"
+          },
+          "params": {
+            "type": "object",
+            "description": "Query parameters - varies by question type",
+            "properties": {
+              "start_date": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                "description": "Start date in YYYY-MM-DD format",
+                "example": "2025-01-01"
+              },
+              "end_date": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                "description": "End date in YYYY-MM-DD format",
+                "example": "2025-01-31"
+              },
+              "product": {
+                "type": "string",
+                "description": "Product SKU or code (for weekly_revenue)",
+                "example": "SKU-123"
+              },
+              "market": {
+                "type": "string",
+                "description": "Market region (for weekly_revenue)",
+                "example": "US",
+                "enum": ["US", "EU", "APAC"]
+              },
+              "cohort": {
+                "type": "string",
+                "description": "Cohort identifier in YYYY-MM format (for cohort_retention)",
+                "example": "2025-01"
+              }
+            }
+          }
+        }
+      },
+      "AnswerResp": {
+        "type": "object",
+        "required": ["summary", "columns", "rows"],
+        "properties": {
+          "summary": {
+            "type": "string",
+            "description": "Human-readable summary of the query results with basic statistics",
+            "example": "weekly_revenue: 4 rows. min=1234.56, max=5678.90, avg=3456.78"
+          },
+          "columns": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Array of column names from the query results",
+            "example": ["week", "revenue", "product", "market"]
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {}
+            },
+            "description": "Array of data rows, each row is an array of values corresponding to columns",
+            "example": [
+              ["2025-W01", 1234.56, "SKU-123", "US"],
+              ["2025-W02", 2345.67, "SKU-123", "US"]
+            ]
+          },
+          "truncated": {
+            "type": "boolean",
+            "description": "Whether the results were truncated due to row limit",
+            "example": false,
+            "default": false
+          },
+          "meta": {
+            "type": "object",
+            "description": "Metadata about the query execution",
+            "properties": {
+              "card_id": {
+                "type": "integer",
+                "description": "The Metabase card ID that was queried"
+              },
+              "cached": {
+                "type": "boolean",
+                "description": "Whether this response was served from cache"
+              }
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Bearer token authentication. Use the ACTION_BEARER token configured in your deployment."
+      }
+    }
+  }
+}

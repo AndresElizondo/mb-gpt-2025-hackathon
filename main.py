@@ -58,7 +58,14 @@ class AnswerResp(BaseModel):
     meta: Dict[str, Any] = {}
 
 # --- App ---
-app = FastAPI()
+app = FastAPI(
+    title="Metabase GPT Proxy",
+    description="Secure proxy for ChatGPT to query Metabase data",
+    version="1.0.0",
+    servers=[
+        {"url": "https://your-service.onrender.com", "description": "Production"}
+    ]
+)
 
 # --- Simple session/cache ---
 _session_token: Optional[str] = None
@@ -115,6 +122,21 @@ def summarize(columns: List[str], rows: List[List[Any]], question: str) -> str:
     if not vals:
         return f"Returned {len(rows)} rows for {question}."
     return f"{question}: {len(rows)} rows. min={min(vals):.2f}, max={max(vals):.2f}, avg={sum(vals)/len(vals):.2f}"
+
+@app.get("/")
+async def root():
+    """Health check endpoint"""
+    return {
+        "status": "healthy",
+        "service": "Metabase GPT Proxy",
+        "version": "1.0.0",
+        "available_queries": list(ALLOWLIST.keys())
+    }
+
+@app.get("/health")
+async def health():
+    """Health check for monitoring"""
+    return {"status": "ok"}
 
 @app.post("/answer", response_model=AnswerResp)
 async def answer(req: AnswerReq, authorization: str = Header(default="")):

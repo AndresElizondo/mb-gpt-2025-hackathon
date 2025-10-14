@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: metabase-gpt-proxy
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: METABASE_BASE
+        sync: false
+      - key: METABASE_USER
+        sync: false
+      - key: METABASE_PASSWORD
+        sync: false
+      - key: METABASE_API_KEY
+        sync: false
+      - key: ACTION_BEARER
+        sync: false
+      - key: ROW_LIMIT
+        value: "5000"
+      - key: TIMEOUT_S
+        value: "25"
+      - key: CACHE_TTL
+        value: "60"
