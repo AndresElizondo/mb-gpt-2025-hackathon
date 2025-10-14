@@ -37,6 +37,11 @@ ALLOWLIST: Dict[str, Dict[str, Any]] = {
         "schema": CohortRetentionParams,
         "max_days": 370,
     },
+    "llm_totals": {
+        "card_id": 1381,
+        "schema": None,  # No parameters needed
+        "max_days": None,  # Not applicable - returns all historical data
+    },
 }
 
 # --- Models ---
@@ -106,22 +111,19 @@ def within_window(p: Dict[str, Any], max_days: int) -> bool:
 def summarize(columns: List[str], rows: List[List[Any]], question: str) -> str:
     if not rows:
         return f"No data returned for {question}."
-    # trivial metric summary if there is a numeric column
-    import math
-    # find first numeric col
-    num_idx = None
-    for i, c in enumerate(zip(*rows)):
-        try:
-            [float(x) for x in c if x is not None]
-            num_idx = i; break
-        except Exception:
-            continue
-    if num_idx is None:
-        return f"Returned {len(rows)} rows for {question}."
-    vals = [float(r[num_idx]) for r in rows if r[num_idx] is not None]
-    if not vals:
-        return f"Returned {len(rows)} rows for {question}."
-    return f"{question}: {len(rows)} rows. min={min(vals):.2f}, max={max(vals):.2f}, avg={sum(vals)/len(vals):.2f}"
+
+    # For llm_totals, provide row count and column summary
+    if question == "llm_totals":
+        return f"Returned {len(rows)} months of data with {len(columns)} metrics including volume, fees, margin, transaction counts across API, Swap, RFQ, Gasless, and Matcha products."
+
+    # For other queries, try to find numeric column for basic stats
+    if len(columns) > 1 and len(rows) > 0:
+        for col_idx, col in enumerate(columns):
+            vals = [r[col_idx] for r in rows if isinstance(r[col_idx], (int, float))]
+            if vals:
+                return f"{question}: {len(rows)} rows. {col} - min={min(vals):.2f}, max={max(vals):.2f}, avg={sum(vals)/len(vals):.2f}"
+
+    return f"Returned {len(rows)} rows for {question}."
 
 @app.get("/")
 async def root():
