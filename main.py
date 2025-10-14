@@ -140,7 +140,13 @@ async def health():
     """Health check for monitoring"""
     return {"status": "ok"}
 
-@app.post("/answer", response_model=AnswerResp)
+@app.get("/openapi.json")
+async def get_openapi():
+    """Serve custom OpenAPI schema"""
+    with open("openapi_schema.json", "r") as f:
+        return json.load(f)
+
+@app.post("/answer", response_model=AnswerResp, operation_id="queryMetabase")
 async def answer(req: AnswerReq, authorization: str = Header(default="")):
     # Auth (GPT → proxy)
     if not authorization.startswith("Bearer ") or authorization.split(" ", 1)[1] != ACTION_BEARER:
