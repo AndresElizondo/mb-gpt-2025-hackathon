@@ -148,13 +148,19 @@ async def answer(req: AnswerReq, authorization: str = Header(default="")):
 
     cfg = ALLOWLIST[req.question]
     Schema = cfg["schema"]
-    params_obj = Schema(**req.params)  # pydantic validation
 
-    # extra guardrails
-    if "max_days" in cfg and not within_window(params_obj.dict(), cfg["max_days"]):
-        raise HTTPException(400, "Date range too large")
+    # Handle queries without parameters
+    if Schema is None:
+        params_dict = {}
+    else:
+        params_obj = Schema(**req.params)  # pydantic validation
+        params_dict = params_obj.dict()
 
-    payload = {"question": req.question, "params": params_obj.dict()}
+        # extra guardrails
+        if cfg.get("max_days") and not within_window(params_dict, cfg["max_days"]):
+            raise HTTPException(400, "Date range too large")
+
+    payload = {"question": req.question, "params": params_dict}
     key = cache_key(payload)
     now = time.time()
     if key in _cache and now - _cache[key][0] < CACHE_TTL:
@@ -169,7 +175,7 @@ async def answer(req: AnswerReq, authorization: str = Header(default="")):
         "parameters": [
             {"type": "date", "name": k, "value": v}
             if "date" in k else {"type": "category", "name": k, "value": v}
-            for k, v in params_obj.dict().items() if v is not None
+            for k, v in params_dict.items() if v is not None
         ]
     }
 
