@@ -16,8 +16,8 @@ CACHE_TTL = int(os.environ.get("CACHE_TTL", "60"))    # seconds
 
 # --- Allowlist (friendly name → card_id & param schema) ---
 class DateRange(BaseModel):
-    start_date: Optional[str] = Field(None, regex=r"^\d{4}-\d{2}-\d{2}$")
-    end_date:   Optional[str] = Field(None, regex=r"^\d{4}-\d{2}-\d{2}$")
+    start_date: Optional[str] = Field(None, pattern=r"^\d{4}-\d{2}-\d{2}$")
+    end_date:   Optional[str] = Field(None, pattern=r"^\d{4}-\d{2}-\d{2}$")
 
 class WeeklyRevenueParams(DateRange):
     product: Optional[str] = Field(None, description="SKU or product code")
