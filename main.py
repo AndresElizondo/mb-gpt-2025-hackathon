@@ -68,8 +68,9 @@ app = FastAPI(
     description="Secure proxy for ChatGPT to query Metabase data",
     version="1.0.0",
     servers=[
-        {"url": "https://your-service.onrender.com", "description": "Production"}
-    ]
+        {"url": "https://mb-gpt-2025-hackathon.onrender.com", "description": "Production"}
+    ],
+    openapi_url=None  # Disable auto-generated OpenAPI, serve custom schema instead
 )
 
 # --- Simple session/cache ---
