@@ -28,8 +28,7 @@
                 "llm_totals": {
                   "summary": "0x API Monthly Totals",
                   "value": {
-                    "question": "llm_totals",
-                    "params": {}
+                    "question": "llm_totals"
                   }
                 }
               }
