@@ -189,7 +189,7 @@ async def answer(req: AnswerReq, authorization: str = Header(default="")):
 
     async with httpx.AsyncClient(timeout=TIMEOUT_S) as client:
         r = await client.post(f"{METABASE_BASE}/api/card/{card_id}/query", headers=headers, json=body)
-        if r.status_code != 200:
+        if r.status_code >= 300:
             raise HTTPException(500, f"Metabase error: {r.text}")
         data = r.json()  # { data: { rows: [...], cols: [...] }, rows_truncated?: bool }
 
