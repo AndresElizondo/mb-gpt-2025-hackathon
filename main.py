@@ -80,7 +80,7 @@ _cache: Dict[str, Tuple[float, Any]] = {}
 async def get_mb_headers() -> Dict[str, str]:
     # Prefer API key if configured
     if MB_API_KEY:
-        return {"X-Metabase-APIKey": MB_API_KEY}
+        return {"x-api-key": MB_API_KEY}
     # Else use a cached session token
     global _session_token, _session_expiry
     if not _session_token or time.time() > _session_expiry:
