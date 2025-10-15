@@ -2,6 +2,7 @@ import os, time, json, hashlib
 from typing import Dict, Any, List, Optional, Tuple
 from fastapi import FastAPI, HTTPException, Header
 from pydantic import BaseModel, Field, validator
+from fastapi.middleware.cors import CORSMiddleware
 import httpx
 
 # --- Config ---
@@ -71,6 +72,15 @@ app = FastAPI(
         {"url": "https://mb-gpt-2025-hackathon.onrender.com", "description": "Production"}
     ],
     openapi_url=None  # Disable auto-generated OpenAPI, serve custom schema instead
+)
+
+# Enable CORS for Custom GPT
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://chat.openai.com", "https://chatgpt.com"],
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["*"],
 )
 
 # --- Simple session/cache ---
