@@ -1,4 +1,5 @@
 import os, time, json, hashlib
+from datetime import datetime, timezone
 from typing import Dict, Any, List, Optional, Tuple
 from fastapi import FastAPI, HTTPException, Header
 from pydantic import BaseModel, Field, validator
@@ -123,18 +124,31 @@ def summarize(columns: List[str], rows: List[List[Any]], question: str) -> str:
     if not rows:
         return f"No data returned for {question}."
 
-    # For llm_totals, provide row count and column summary
+    # Get current date for context
+    now = datetime.now(timezone.utc)
+    current_date_str = now.strftime("%B %d, %Y")  # e.g., "October 14, 2025"
+    current_day = now.day
+
+    # For llm_totals, provide row count and column summary with date context
     if question == "llm_totals":
-        return f"Returned {len(rows)} months of data with {len(columns)} metrics including volume, fees, margin, transaction counts across API, Swap, RFQ, Gasless, and Matcha products."
+        base_summary = f"Returned {len(rows)} months of data with {len(columns)} metrics including volume, fees, margin, transaction counts across API, Swap, RFQ, Gasless, and Matcha products."
+
+        # Add context about partial month if we're not at month end
+        if current_day < 28:  # Roughly not end of month
+            date_context = f" [Context: Today is {current_date_str}, so the current month's data is partial (only {current_day} days). When analyzing trends, note that the most recent month is incomplete.]"
+        else:
+            date_context = f" [Context: Today is {current_date_str}.]"
+
+        return base_summary + date_context
 
     # For other queries, try to find numeric column for basic stats
     if len(columns) > 1 and len(rows) > 0:
         for col_idx, col in enumerate(columns):
             vals = [r[col_idx] for r in rows if isinstance(r[col_idx], (int, float))]
             if vals:
-                return f"{question}: {len(rows)} rows. {col} - min={min(vals):.2f}, max={max(vals):.2f}, avg={sum(vals)/len(vals):.2f}"
+                return f"{question}: {len(rows)} rows. {col} - min={min(vals):.2f}, max={max(vals):.2f}, avg={sum(vals)/len(vals):.2f} [Context: Today is {current_date_str}]"
 
-    return f"Returned {len(rows)} rows for {question}."
+    return f"Returned {len(rows)} rows for {question}. [Context: Today is {current_date_str}]"
 
 @app.get("/")
 async def root():
@@ -208,12 +222,23 @@ async def answer(req: AnswerReq, authorization: str = Header(default="")):
     rows = data["data"]["rows"][:ROW_LIMIT]
     truncated = bool(data["data"].get("rows_truncated")) or len(data["data"]["rows"]) > ROW_LIMIT
 
+    # Add current date context to metadata
+    now = datetime.now(timezone.utc)
+    meta_data = {
+        "card_id": card_id,
+        "cached": False,
+        "query_date": now.strftime("%Y-%m-%d"),
+        "query_time_utc": now.strftime("%Y-%m-%d %H:%M:%S UTC"),
+        "current_day_of_month": now.day,
+        "is_partial_month": now.day < 28
+    }
+
     resp = AnswerResp(
         summary=summarize(cols, rows, req.question),
         columns=cols,
         rows=rows,
         truncated=truncated,
-        meta={"card_id": card_id, "cached": False}
+        meta=meta_data
     )
-    _cache[key] = (now, resp.dict())
+    _cache[key] = (time.time(), resp.dict())
     return resp

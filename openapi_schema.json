@@ -113,7 +113,7 @@
           },
           "meta": {
             "type": "object",
-            "description": "Metadata about the query execution",
+            "description": "Metadata about the query execution and current date context",
             "properties": {
               "card_id": {
                 "type": "integer",
@@ -122,6 +122,26 @@
               "cached": {
                 "type": "boolean",
                 "description": "Whether this response was served from cache"
+              },
+              "query_date": {
+                "type": "string",
+                "description": "Current date when the query was executed (YYYY-MM-DD)",
+                "example": "2025-10-14"
+              },
+              "query_time_utc": {
+                "type": "string",
+                "description": "Current date and time when the query was executed (UTC)",
+                "example": "2025-10-14 15:30:45 UTC"
+              },
+              "current_day_of_month": {
+                "type": "integer",
+                "description": "Current day of the month (1-31). Use this to understand if monthly data is partial.",
+                "example": 14
+              },
+              "is_partial_month": {
+                "type": "boolean",
+                "description": "True if we're early in the month (before day 28), indicating current month data is incomplete",
+                "example": true
               }
             }
           }
